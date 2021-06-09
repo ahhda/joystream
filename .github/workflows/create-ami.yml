@@ -3,6 +3,8 @@ name: Build code and create AMI
 on:
   push:
     branches:
+      - master
+      - olympia
       - test_branch
 
 jobs:
@@ -48,7 +50,7 @@ jobs:
     - name: Run playbook
       uses: dawidd6/action-ansible-playbook@v2
       with:
-        playbook: github-action-ansible.yml
+        playbook: github-action-playbook.yml
         directory: devops/infrastructure
         requirements: requirements.yml
         key: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -59,4 +61,3 @@ jobs:
           --extra-vars "git_repo=https://github.com/${{ github.repository }} \
                         branch_name=${{ steps.extract_branch.outputs.branch }} instance_id=${{ steps.deploy_stack.outputs.InstanceId }}
                         stack_name=${{ env.STACK_NAME }} ami_name=${{ env.ami_name }}"
-          --verbose
