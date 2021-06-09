@@ -10,6 +10,6 @@
     chdir: "{{ remote_code_path }}"
 
 - name: Build joystream node
-  shell: . ~/.bash_profile && yarn cargo-build
+  command: ./scripts/cargo-build.sh
   args:
     chdir: "{{ remote_code_path }}"
