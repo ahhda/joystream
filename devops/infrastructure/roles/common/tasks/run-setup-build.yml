@@ -23,3 +23,18 @@
   command: ./scripts/cargo-build.sh
   args:
     chdir: "{{ remote_code_path }}"
+  async: 2400
+  poll: 0
+  register: build_result
+
+- name: Debug
+  debug:
+    msg: "Build started in async way"
+
+- name: Check on build async task
+  async_status:
+    jid: "{{ build_result.ansible_job_id }}"
+  register: job_result
+  until: job_result.finished
+  retries: 25
+  delay: 100
