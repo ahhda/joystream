@@ -142,3 +142,5 @@ All software under this project is licensed as [GPLv3](./LICENSE) unless otherwi
 ## Acknowledgments
 
 Thanks to the whole [Parity Tech](https://www.parity.io/) team for making substrate and helping in chat with tips, suggestions, tutorials and answering all our questions during development.
+
+New edits
