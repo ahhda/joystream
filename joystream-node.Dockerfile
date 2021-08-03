@@ -15,7 +15,6 @@ COPY . /joystream
 # Build all cargo crates
 # Ensure our tests and linter pass before actual build
 ENV WASM_BUILD_TOOLCHAIN=nightly-2021-03-24
-RUN apt-get install libprotobuf-dev protobuf-compiler
 RUN apt-get install -y libprotobuf-dev protobuf-compiler
 RUN BUILD_DUMMY_WASM_BINARY=1 cargo clippy --release --all -- -D warnings && \
     cargo test --release --all && \
