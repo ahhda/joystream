@@ -39,7 +39,7 @@
             jid: '{{ build_result.ansible_job_id }}'
           register: job_result
           until: job_result.finished
-          retries: 36
+          retries: 72
           delay: 100
 
       always:
