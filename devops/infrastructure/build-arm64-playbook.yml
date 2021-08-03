@@ -30,7 +30,7 @@
             tag: '{{ tag_name }}-arm'
             push: yes
             source: build
-          async: 3600
+          async: 7200
           poll: 0
           register: build_result
 
