@@ -153,8 +153,8 @@ jobs:
 
   push-manifest:
     name: Create manifest using both the arch images
-    if: ${{ needs.push-amd64.outputs.image_exists == 1 }} || ${{ needs.push-arm.outputs.image_exists_arm == 1 }} || ${{ needs.push-arm.outputs.image_exists_arm64 == 1 }}
     needs: [push-amd64, push-arm]
+    if: needs.push-amd64.outputs.image_exists == 1 || needs.push-arm.outputs.image_exists_arm == 1 || needs.push-arm.outputs.image_exists_arm64 == 1
     runs-on: ubuntu-latest
     env:
       TAG_SHASUM: ${{ needs.push-amd64.outputs.tag_shasum }}
