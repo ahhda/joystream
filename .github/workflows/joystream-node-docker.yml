@@ -1,9 +1,6 @@
 name: joystream-node-docker
 
-on:
-  push:
-    branches:
-      - docker-build-mytest
+on: push
 
 env:
   REPOSITORY: joystream/node
