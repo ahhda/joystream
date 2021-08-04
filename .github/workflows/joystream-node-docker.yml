@@ -161,7 +161,8 @@ jobs:
     steps:
       - name: Debug
         run: |
-          echo ${{ needs.push-amd64.outputs.image_exists }}
+          echo "Hello world"
+          echo "${{ needs.push-amd64.outputs.image_exists }}"
           echo ${{ needs.push-arm.outputs.image_exists_arm }}
           echo ${{ needs.push-arm.outputs.image_exists_arm64 }}
 
