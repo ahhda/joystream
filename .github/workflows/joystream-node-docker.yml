@@ -159,6 +159,12 @@ jobs:
     env:
       TAG_SHASUM: ${{ needs.push-amd64.outputs.tag_shasum }}
     steps:
+      - name: Debug
+        run: |
+          echo ${{ needs.push-amd64.outputs.image_exists }}
+          echo ${{ needs.push-arm.outputs.image_exists_arm }}
+          echo ${{ needs.push-arm.outputs.image_exists_arm64 }}
+
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
