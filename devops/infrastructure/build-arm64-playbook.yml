@@ -24,10 +24,10 @@
           community.docker.docker_image:
             build:
               path: ./joystream
-              dockerfile: joystream-node.Dockerfile
-              platform: linux/arm/v7
+              dockerfile: '{{ dockerfile }}'
+              platform: '{{ platform }}'
             name: '{{ repository }}'
-            tag: '{{ tag_name }}-arm'
+            tag: '{{ tag_name }}'
             push: yes
             source: build
           async: 7200
