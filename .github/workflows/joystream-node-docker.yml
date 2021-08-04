@@ -111,6 +111,7 @@ jobs:
         run: |
           export IMAGE_EXISTS=$(docker manifest inspect ${{ env.REPOSITORY }}:${{ steps.compute_shasum.outputs.shasum }}-${{ matrix.platform_tag }} > /dev/null ; echo $?)
           echo "::set-output name=image_exists_${{ matrix.platform_tag }}::${IMAGE_EXISTS}"
+          echo "::set-output name=image_exists::${IMAGE_EXISTS}"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -118,7 +119,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-        if: ${{ steps.compute_image_exists.outputs.image_exists_${{ matrix.platform_tag }} == 1 }}
+        if: ${{ steps.compute_image_exists.outputs.image_exists == 1 }}
 
       - name: Deploy to AWS CloudFormation
         uses: aws-actions/aws-cloudformation-github-deploy@v1
@@ -128,7 +129,7 @@ jobs:
           template: devops/infrastructure/single-instance-docker.yml
           no-fail-on-empty-changeset: '1'
           parameter-overrides: 'KeyName=${{ env.KEY_NAME }},EC2AMI=ami-00d1ab6b335f217cf,EC2InstanceType=t4g.xlarge'
-        if: ${{ steps.compute_image_exists.outputs.image_exists_${{ matrix.platform_tag }} == 1 }}
+        if: ${{ steps.compute_image_exists.outputs.image_exists == 1 }}
 
       - name: Run playbook
         uses: dawidd6/action-ansible-playbook@v2
@@ -148,7 +149,7 @@ jobs:
                           tag_name=${{ steps.compute_shasum.outputs.shasum }}-${{ matrix.platform_tag }} \
                           repository=${{ env.REPOSITORY }} dockerfile=${{ matrix.file }} \
                           stack_name=${{ env.STACK_NAME }} platform=${{ matrix.platform }}"
-        if: ${{ steps.compute_image_exists.outputs.image_exists_${{ matrix.platform_tag }} == 1 }}
+        if: ${{ steps.compute_image_exists.outputs.image_exists == 1 }}
 
   push-manifest:
     name: Create manifest using both the arch images
