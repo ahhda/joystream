@@ -10,20 +10,36 @@ on:
         description: 'Tag (v9.3.0)'
         required: true
 
+env:
+  REPOSITORY: joystream/node
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Build
-        run: echo ${{ github.sha }} > Release.txt
-      - name: Test
-        run: cat Release.txt
+
+      - id: compute_shasum
+        name: Compute runtime code shasum
+        run: |
+          export RUNTIME_CODE_SHASUM=`scripts/runtime-code-shasum.sh`
+          echo "::set-output name=shasum::${RUNTIME_CODE_SHASUM}"
+
+      - id: extract_binaries
+        name: Copy binaries from docker files
+        run: |
+          docker cp $(docker create --rm ${{ env.REPOSITORY }}:${{ steps.compute_shasum.outputs.shasum }}-amd64):/joystream/node ./node-amd64
+          docker cp $(docker create --rm ${{ env.REPOSITORY }}:${{ steps.compute_shasum.outputs.shasum }}-arm64):/joystream/node ./node-arm64
+          docker cp $(docker create --rm ${{ env.REPOSITORY }}:${{ steps.compute_shasum.outputs.shasum }}-arm):/joystream/node ./node-arm
+
       - name: Release
         uses: softprops/action-gh-release@v1
         # if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: Release.txt
+          files: |
+            node-amd64
+            node-arm64
+            node-arm
           tag_name: ${{ github.event.inputs.tag }}
           name: ${{ github.event.inputs.name }}
