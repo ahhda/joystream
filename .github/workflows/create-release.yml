@@ -11,7 +11,7 @@ on:
         required: true
 
 env:
-  REPOSITORY: joystream/node
+  REPOSITORY: ahhda/joystream
 
 jobs:
   build:
