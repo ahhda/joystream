@@ -1,10 +1,13 @@
 name: joystream-node-docker
 
-on: push
+on:
+  push:
+    branches:
+      - docker-build-mytest
 
 env:
-  REPOSITORY: joystream/node
-  KEY_NAME: joystream-github-action-key
+  REPOSITORY: ahhda/joystream
+  KEY_NAME: anuj-key
 
 jobs:
   push-amd64:
