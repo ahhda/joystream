@@ -1,4 +1,4 @@
-name: Create release
+name: Create release with node binaries
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ env:
   REPOSITORY: ahhda/joystream
 
 jobs:
-  build:
+  create-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -31,11 +31,11 @@ jobs:
         run: |
           IMAGE=${{ env.REPOSITORY }}:${{ steps.compute_shasum.outputs.shasum }}
 
-          docker create --name temp-container-joystream-node $IMAGE-amd64
+          docker run -d --entrypoint tail --name temp-container-joystream-node $IMAGE-amd64 -f /dev/null
           docker cp temp-container-joystream-node:/joystream/node ./node-amd64
           docker cp temp-container-joystream-node:/joystream/runtime.compact.wasm ./joystream_runtime_${{ github.event.inputs.tag }}.wasm
           RESULT=$(docker exec temp-container-joystream-node b2sum -l 256 runtime.compact.wasm)
-          docker rm temp-container-joystream-node
+          docker rm --force temp-container-joystream-node
           echo "::set-output name=blob_hash::${RESULT}"
 
           docker cp $(docker create --rm $IMAGE-arm64):/joystream/node ./node-arm64
