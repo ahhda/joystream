@@ -29,7 +29,7 @@ jobs:
       - id: extract_binaries
         name: Copy binaries from docker files
         run: |
-          IMAGE=${{ env.REPOSITORY }}:${{ env.TAG_SHASUM }}
+          IMAGE=${{ env.REPOSITORY }}:${{ steps.compute_shasum.outputs.shasum }}
 
           docker create --name temp-container-joystream-node $IMAGE-amd64
           docker cp temp-container-joystream-node:/joystream/node ./node-amd64
