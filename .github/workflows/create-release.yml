@@ -63,6 +63,7 @@ jobs:
 
       - name: Build binaries
         run: |
+          sudo chown -R $(whoami) ~/.cargo/
           ./scripts/raspberry-cross-build.sh
 
       - name: Tar the binary
