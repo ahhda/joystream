@@ -63,7 +63,11 @@ jobs:
 
       - name: Build binaries
         run: |
-          sudo chown -R $(whoami) ~/.cargo/
+          export WORKSPACE_ROOT=`cargo metadata --offline --no-deps --format-version 1 | jq .workspace_root -r`
+          echo $WORKSPACE_ROOT
+          ls -al .
+          ls -al $WORKSPACE_ROOT
+          sudo chown -R $(whoami) /home/ubuntu/.cargo/
           ./scripts/raspberry-cross-build.sh
 
       - name: Tar the binary
