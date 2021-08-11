@@ -67,7 +67,10 @@ jobs:
           echo $WORKSPACE_ROOT
           ls -al .
           ls -al $WORKSPACE_ROOT
-          sudo chown -R $(whoami) /home/ubuntu/.cargo/
+          pwd
+          echo ~/
+          sudo chown -R $(whoami) $WORKSPACE_ROOT
+          cargo clean
           ./scripts/raspberry-cross-build.sh
 
       - name: Tar the binary
