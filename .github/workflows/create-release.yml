@@ -64,7 +64,6 @@ jobs:
       - name: Build binaries
         run: |
           export WORKSPACE_ROOT=`cargo metadata --offline --no-deps --format-version 1 | jq .workspace_root -r`
-          echo $WORKSPACE_ROOT
           sudo chmod a+w $WORKSPACE_ROOT
           ./scripts/raspberry-cross-build.sh
 
