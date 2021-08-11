@@ -11,7 +11,7 @@ on:
         required: true
 
 env:
-  REPOSITORY: ahhda/joystream
+  REPOSITORY: joystream/node
 
 jobs:
   build-mac-binary:
