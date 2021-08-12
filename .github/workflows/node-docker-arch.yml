@@ -46,9 +46,15 @@ jobs:
           # a GitHub package registry.
           githubToken: ${{ github.token }}
 
-          # install: |
-          #   apt-get update -q -y
-          #   apt-get install openjdk-8-jdk -q -y
+          install: |
+            apt-get update -yq
+            apt-get install -yq apt-transport-https ca-certificates curl gnupg lsb-release
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+            echo "deb [arch=arm64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+            apt-get update -y
+            apt-get install -y docker-ce docker-ce-cli containerd.io
+            usermod -aG docker ubuntu
+
           run: |
             uname -a
             echo ::set-output name=uname::$(uname -a)
