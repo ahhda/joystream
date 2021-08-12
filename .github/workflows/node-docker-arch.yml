@@ -60,7 +60,7 @@ jobs:
             uname -a
             echo ::set-output name=uname::$(uname -a)
             ls -al .
-            docker buildx build --tag ahhda/joystream:${{ steps.compute_shasum.outputs.shasum }}-arm64 --push --platform linux/arm64 --file joystream-node.Dockerfile .
+            docker build . --tag ahhda/joystream:${{ steps.compute_shasum.outputs.shasum }}-arm64 --platform linux/arm64 --file joystream-node.Dockerfile
 
       - name: Get the output
         # Echo the `uname` output parameter from the `runcmd` step
