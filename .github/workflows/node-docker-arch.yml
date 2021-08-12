@@ -1,0 +1,61 @@
+name: node-docker-arch
+
+on:
+  push:
+    branches:
+      - run-on-arch
+
+env:
+  REPOSITORY: ahhda/joystream
+
+jobs:
+  push-all:
+    name: Build joystream/node Docker image for all
+    runs-on: ubuntu-latest
+    outputs:
+      tag_shasum: ${{ steps.compute_shasum.outputs.shasum }}
+      image_exists: ${{ steps.compute_main_image_exists.outputs.image_exists }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14.x'
+
+      - id: compute_shasum
+        name: Compute runtime code shasum
+        run: |
+          export RUNTIME_CODE_SHASUM=`scripts/runtime-code-shasum.sh`
+          echo "::set-output name=shasum::${RUNTIME_CODE_SHASUM}"
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: test_on_arm
+        id: runcmd
+        uses: uraimo/run-on-arch-action@v2.0.5
+        with:
+          arch: aarch64
+          distro: ubuntu20.04
+
+          # Not required, but speeds up builds by storing container images in
+          # a GitHub package registry.
+          githubToken: ${{ github.token }}
+
+          # install: |
+          #   apt-get update -q -y
+          #   apt-get install openjdk-8-jdk -q -y
+          run: |
+            uname -a
+            echo ::set-output name=uname::$(uname -a)
+            ls -al .
+            docker ps
+
+      - name: Get the output
+        # Echo the `uname` output parameter from the `runcmd` step
+        run: |
+          echo "The uname output was ${{ steps.runcmd.outputs.uname }}"
