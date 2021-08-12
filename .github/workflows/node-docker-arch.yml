@@ -61,6 +61,7 @@ jobs:
             echo ::set-output name=uname::$(uname -a)
             ls -al .
             docker ps
+            docker buildx ls
 
       - name: Get the output
         # Echo the `uname` output parameter from the `runcmd` step
