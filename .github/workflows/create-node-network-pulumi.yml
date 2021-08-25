@@ -37,7 +37,7 @@ jobs:
         run: |
           npm install
           pulumi login
-          pulumi stack init dev
+          pulumi stack select dev --non-interactive --create
           pulumi config set-all --plaintext aws:region=us-east-1 \
             --plaintext numberOfValidatpuors=2 --plaintext isMinikube=false --plaintext networkSuffix=8122 \
             --plaintext nodeImage=joystream/node:latest --plaintext encryptionKey=password
@@ -61,10 +61,12 @@ jobs:
 
       - name: Run kubectl commands
         run: |
+          echo ${{ steps.pulumi.outputs.kubeconfig }} > kubeconfig.yml
+          export KUBECONFIG=$PWD/kubeconfig.yml
           kubectl config set-context --current --namespace=${{ steps.pulumi.outputs.namespaceName }}
           kubectl cp $(kubectl get pods | grep rpc-node | awk '{print $1}'):/chain-data/chain-data.7z ./chain-data.7z
 
-      - name: Get kubectl events
+      - name: Get kubectl events for debugging
         if: always()
         run: |
           kubectl get events
