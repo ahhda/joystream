@@ -26,7 +26,7 @@ jobs:
 
       - uses: pulumi/actions@v3
         with:
-          work-dir: ./devops/infrastructure/node-network
+          work-dir: devops/infrastructure/node-network
           command: preview
           stack-name: dev
           cloud-url: file://~
