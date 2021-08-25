@@ -33,6 +33,13 @@ jobs:
       #     minikube version: 'v1.21.0'
       #     kubernetes version: 'v1.20.7'
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
       - name: Create local stack
         run: |
           npm install
@@ -62,7 +69,7 @@ jobs:
       - name: Run kubectl commands
         run: |
           pulumi stack output kubeconfig > kubeconfig.yml
-          export KUBECONFIG=$PWD/kubeconfig.yml
+          echo "KUBECONFIG=$PWD/kubeconfig.yml" >> $GITHUB_ENV
           kubectl config set-context --current --namespace=${{ steps.pulumi.outputs.namespaceName }}
           kubectl get pods
           kubectl get pods | grep rpc-node | awk '{print $1}'
@@ -72,7 +79,6 @@ jobs:
       - name: Get kubectl events for debugging
         if: always()
         run: |
-          export KUBECONFIG=$PWD/kubeconfig.yml
           kubectl get events
         working-directory: devops/infrastructure/node-network
 
