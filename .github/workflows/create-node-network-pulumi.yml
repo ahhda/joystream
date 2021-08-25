@@ -26,7 +26,6 @@ jobs:
 
       - name: Create local stack
         run: |
-          cat Pulumi.dev.yaml
           npm install
           pulumi login --local
           pulumi stack init dev
