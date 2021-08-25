@@ -1,0 +1,80 @@
+name: Create node-network using Pulumi
+
+on:
+  workflow_dispatch:
+    inputs:
+      encryption-key:
+        description: 'Encryption Key (will be used to password protect secrets 7z file)'
+        required: true
+        default: 'password'
+
+defaults:
+  run:
+    working-directory: devops/infrastructure/node-network
+
+jobs:
+  up:
+    name: Create Pulumi stack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14.x'
+
+      # - name: Setup Minikube
+      #   uses: manusa/actions-setup-minikube@v2.4.2
+      #   with:
+      #     minikube version: 'v1.21.0'
+      #     kubernetes version: 'v1.20.7'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Create local stack
+        run: |
+          npm install
+          pulumi login
+          pulumi stack select dev --non-interactive --create
+          pulumi config set-all --plaintext aws:region=us-east-1 \
+            --plaintext numberOfValidatpuors=2 --plaintext isMinikube=false --plaintext networkSuffix=8122 \
+            --plaintext nodeImage=joystream/node:latest --plaintext encryptionKey=${{ github.event.inputs.encryption-key }}
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+      - uses: pulumi/actions@v3
+        id: pulumi
+        with:
+          work-dir: devops/infrastructure/node-network
+          command: up
+          stack-name: dev
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'us-east-1'
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+      - name: Run kubectl commands
+        run: |
+          pulumi stack output kubeconfig > kubeconfig.yml
+          export KUBECONFIG=$PWD/kubeconfig.yml
+          echo "KUBECONFIG=$PWD/kubeconfig.yml" >> $GITHUB_ENV
+          kubectl config set-context --current --namespace=${{ steps.pulumi.outputs.namespaceName }}
+          kubectl cp $(kubectl get pods | grep rpc-node | awk '{print $1}'):/chain-data/chain-data.7z ./chain-data.7z
+
+      - name: Get kubectl events for debugging
+        if: always()
+        run: |
+          kubectl get events
+
+      - name: Upload chain-spec files and other secrets as an artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: chain-data.7z
+          path: devops/infrastructure/node-network/chain-data.7z
+          retention-days: 1
