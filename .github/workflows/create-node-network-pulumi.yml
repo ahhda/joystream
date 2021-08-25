@@ -29,7 +29,9 @@ jobs:
           npm install
           pulumi login --local
           pulumi stack init dev
-          ls -al .
+          pulumi config set-all --plaintext aws:region=us-east-1 --plaintext aws:profile=joystream-user \
+            --plaintext numberOfValidators=2 --plaintext isMinikube=true --plaintext networkSuffix=8122 \
+            --plaintext nodeImage=joystream/node:latest --plaintext encryptionKey=password
           cat Pulumi.dev.yaml
         working-directory: devops/infrastructure/node-network
         env:
