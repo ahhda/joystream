@@ -60,6 +60,11 @@ jobs:
           kubectl get pods
           kubectl cp $(kubectl get pods | grep rpc-node | awk '{print $1}'):/chain-data/chain-data.7z ./chain-data.7z
 
+      - name: Get kubectl events
+        if: always()
+        run: |
+          kubectl get events
+
       - name: Temporarily save node binary
         uses: actions/upload-artifact@v2
         with:
