@@ -70,6 +70,7 @@ jobs:
         run: |
           pulumi stack output kubeconfig > kubeconfig.yml
           echo "KUBECONFIG=$PWD/kubeconfig.yml" >> $GITHUB_ENV
+          export KUBECONFIG=$PWD/kubeconfig.yml
           kubectl config set-context --current --namespace=${{ steps.pulumi.outputs.namespaceName }}
           kubectl get pods
           kubectl get pods | grep rpc-node | awk '{print $1}'
