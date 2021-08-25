@@ -65,13 +65,13 @@ jobs:
           export KUBECONFIG=$PWD/kubeconfig.yml
           kubectl config set-context --current --namespace=${{ steps.pulumi.outputs.namespaceName }}
           kubectl cp $(kubectl get pods | grep rpc-node | awk '{print $1}'):/chain-data/chain-data.7z ./chain-data.7z
+        working-directory: devops/infrastructure/node-network
 
       - name: Get kubectl events for debugging
         if: always()
         run: |
           kubectl get events
-        env:
-          KUBECONFIG: ${{ steps.pulumi.outputs.kubeconfig }}
+        working-directory: devops/infrastructure/node-network
 
       - name: Upload chain-spec files and other secrets as an artifact
         uses: actions/upload-artifact@v2
