@@ -1,9 +1,0 @@
-encryptionsalt: v1:0wLj2b1A+4Y=:v1:MhuOmONkfSnlVYSo:08ZR62cOoXkQuIerLC2oPOjyn6OdsQ==
-config:
-  aws:profile: joystream-user
-  aws:region: us-east-1
-  node-network:encryptionKey: password
-  node-network:isMinikube: "false"
-  node-network:networkSuffix: "8122"
-  node-network:nodeImage: joystream/node:latest
-  node-network:numberOfValidators: "2"
