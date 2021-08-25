@@ -3,4 +3,3 @@
 kubeconfig.yml
 package-lock.json
 .env
-Pulumi.*.yaml
