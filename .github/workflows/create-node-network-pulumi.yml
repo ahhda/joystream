@@ -36,16 +36,15 @@ jobs:
       - name: Create local stack
         run: |
           npm install
-          pulumi login --local
+          pulumi login
           pulumi stack init dev
           pulumi config set-all --plaintext aws:region=us-east-1 --plaintext aws:profile=joystream-user \
-            --plaintext numberOfValidators=2 --plaintext isMinikube=true --plaintext networkSuffix=8122 \
+            --plaintext numberOfValidatpuors=2 --plaintext isMinikube=false --plaintext networkSuffix=8122 \
             --plaintext nodeImage=joystream/node:latest --plaintext encryptionKey=password
           cat Pulumi.dev.yaml
-          kubectl get pods
         working-directory: devops/infrastructure/node-network
         env:
-          PULUMI_CONFIG_PASSPHRASE:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
       - uses: pulumi/actions@v3
         id: pulumi
@@ -53,17 +52,16 @@ jobs:
           work-dir: devops/infrastructure/node-network
           command: up
           stack-name: dev
-          cloud-url: file://~
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: 'us-east-1'
-          PULUMI_CONFIG_PASSPHRASE:
+          # PULUMI_CONFIG_PASSPHRASE:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
       - name: Run kubectl commands
         run: |
           kubectl config set-context --current --namespace=${{ steps.pulumi.outputs.namespaceName }}
-          kubectl get pods
           kubectl cp $(kubectl get pods | grep rpc-node | awk '{print $1}'):/chain-data/chain-data.7z ./chain-data.7z
 
       - name: Get kubectl events
@@ -71,7 +69,7 @@ jobs:
         run: |
           kubectl get events
 
-      - name: Temporarily save node binary
+      - name: Upload chain-spec files and other secrets as an artifact
         uses: actions/upload-artifact@v2
         with:
           name: chain-data.7z
