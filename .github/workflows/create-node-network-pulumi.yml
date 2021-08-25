@@ -42,9 +42,10 @@ jobs:
           PULUMI_CONFIG_PASSPHRASE:
 
       - uses: pulumi/actions@v3
+        id: pulumi
         with:
           work-dir: devops/infrastructure/node-network
-          command: preview
+          command: up
           stack-name: dev
           cloud-url: file://~
         env:
@@ -52,3 +53,16 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: 'us-east-1'
           PULUMI_CONFIG_PASSPHRASE:
+
+      - name: Run kubectl commands
+        run: |
+          kubectl config set-context --current --namespace=${{ steps.pulumi.outputs.namespaceName }}
+          kubectl get pods
+          kubectl cp $(kubectl get pods | grep rpc-node | awk '{print $1}'):/chain-data/chain-data.7z ./chain-data.7z
+
+      - name: Temporarily save node binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: chain-data.7z
+          path: chain-data.7z
+          retention-days: 1
