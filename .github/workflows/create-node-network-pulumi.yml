@@ -27,18 +27,18 @@ jobs:
       # - name: Start minikube
       #   uses: medyagh/setup-minikube@master
 
-      - name: Setup Minikube
-        uses: manusa/actions-setup-minikube@v2.4.2
-        with:
-          minikube version: 'v1.21.0'
-          kubernetes version: 'v1.20.7'
+      # - name: Setup Minikube
+      #   uses: manusa/actions-setup-minikube@v2.4.2
+      #   with:
+      #     minikube version: 'v1.21.0'
+      #     kubernetes version: 'v1.20.7'
 
       - name: Create local stack
         run: |
           npm install
           pulumi login
           pulumi stack init dev
-          pulumi config set-all --plaintext aws:region=us-east-1 --plaintext aws:profile=joystream-user \
+          pulumi config set-all --plaintext aws:region=us-east-1 \
             --plaintext numberOfValidatpuors=2 --plaintext isMinikube=false --plaintext networkSuffix=8122 \
             --plaintext nodeImage=joystream/node:latest --plaintext encryptionKey=password
           cat Pulumi.dev.yaml
