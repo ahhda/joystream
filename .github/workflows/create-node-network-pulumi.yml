@@ -24,6 +24,15 @@ jobs:
         with:
           node-version: '14.x'
 
+      - name: Create local stack
+        run: |
+          pulumi login --local
+          pulumi stack init dev
+          ls -al .
+        working-directory: devops/infrastructure/node-network
+        env:
+          PULUMI_CONFIG_PASSPHRASE: not-a-secret
+
       - uses: pulumi/actions@v3
         with:
           work-dir: devops/infrastructure/node-network
@@ -34,3 +43,4 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: 'us-east-1'
+          PULUMI_CONFIG_PASSPHRASE: not-a-secret
