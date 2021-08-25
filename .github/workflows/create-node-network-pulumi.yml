@@ -64,12 +64,15 @@ jobs:
           pulumi stack output kubeconfig > kubeconfig.yml
           export KUBECONFIG=$PWD/kubeconfig.yml
           kubectl config set-context --current --namespace=${{ steps.pulumi.outputs.namespaceName }}
+          kubectl get pods
+          kubectl get pods | grep rpc-node | awk '{print $1}'
           kubectl cp $(kubectl get pods | grep rpc-node | awk '{print $1}'):/chain-data/chain-data.7z ./chain-data.7z
         working-directory: devops/infrastructure/node-network
 
       - name: Get kubectl events for debugging
         if: always()
         run: |
+          export KUBECONFIG=$PWD/kubeconfig.yml
           kubectl get events
         working-directory: devops/infrastructure/node-network
 
