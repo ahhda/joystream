@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       encryption-key:
-        description: 'Will be used to password protect secrets 7z file'
+        description: 'Encryption Key (will be used to password protect secrets 7z file)'
         required: true
         default: 'password'
 
@@ -62,6 +62,7 @@ jobs:
       - name: Run kubectl commands
         run: |
           pulumi stack output kubeconfig > kubeconfig.yml
+          export KUBECONFIG=$PWD/kubeconfig.yml
           echo "KUBECONFIG=$PWD/kubeconfig.yml" >> $GITHUB_ENV
           kubectl config set-context --current --namespace=${{ steps.pulumi.outputs.namespaceName }}
           kubectl cp $(kubectl get pods | grep rpc-node | awk '{print $1}'):/chain-data/chain-data.7z ./chain-data.7z
