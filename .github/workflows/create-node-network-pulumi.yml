@@ -33,6 +33,7 @@ jobs:
             --plaintext numberOfValidators=2 --plaintext isMinikube=true --plaintext networkSuffix=8122 \
             --plaintext nodeImage=joystream/node:latest --plaintext encryptionKey=password
           cat Pulumi.dev.yaml
+          kubectl get pods
         working-directory: devops/infrastructure/node-network
         env:
           PULUMI_CONFIG_PASSPHRASE:
