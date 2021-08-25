@@ -2,16 +2,11 @@ name: Create node-network using Pulumi
 
 on:
   workflow_dispatch:
-    # inputs:
-    #   name:
-    #     description: 'Release name (v9.3.0 - Antioch)'
-    #     required: true
-    #   tag:
-    #     description: 'Tag (v9.3.0)'
-    #     required: true
-
-# env:
-#   REPOSITORY: joystream/node
+    inputs:
+      encryption-key:
+        description: 'Will be used to password protect secrets 7z file'
+        required: true
+        default: 'password'
 
 defaults:
   run:
@@ -27,9 +22,6 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '14.x'
-
-      # - name: Start minikube
-      #   uses: medyagh/setup-minikube@master
 
       # - name: Setup Minikube
       #   uses: manusa/actions-setup-minikube@v2.4.2
@@ -51,8 +43,7 @@ jobs:
           pulumi stack select dev --non-interactive --create
           pulumi config set-all --plaintext aws:region=us-east-1 \
             --plaintext numberOfValidatpuors=2 --plaintext isMinikube=false --plaintext networkSuffix=8122 \
-            --plaintext nodeImage=joystream/node:latest --plaintext encryptionKey=password
-          cat Pulumi.dev.yaml
+            --plaintext nodeImage=joystream/node:latest --plaintext encryptionKey=${{ github.event.inputs.encryption-key }}
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
@@ -66,17 +57,13 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: 'us-east-1'
-          # PULUMI_CONFIG_PASSPHRASE:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
       - name: Run kubectl commands
         run: |
           pulumi stack output kubeconfig > kubeconfig.yml
           echo "KUBECONFIG=$PWD/kubeconfig.yml" >> $GITHUB_ENV
-          export KUBECONFIG=$PWD/kubeconfig.yml
           kubectl config set-context --current --namespace=${{ steps.pulumi.outputs.namespaceName }}
-          kubectl get pods
-          kubectl get pods | grep rpc-node | awk '{print $1}'
           kubectl cp $(kubectl get pods | grep rpc-node | awk '{print $1}'):/chain-data/chain-data.7z ./chain-data.7z
 
       - name: Get kubectl events for debugging
