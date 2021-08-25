@@ -13,6 +13,10 @@ on:
 # env:
 #   REPOSITORY: joystream/node
 
+defaults:
+  run:
+    working-directory: devops/infrastructure/node-network
+
 jobs:
   up:
     name: Create Pulumi stack
@@ -49,7 +53,6 @@ jobs:
             --plaintext numberOfValidatpuors=2 --plaintext isMinikube=false --plaintext networkSuffix=8122 \
             --plaintext nodeImage=joystream/node:latest --plaintext encryptionKey=password
           cat Pulumi.dev.yaml
-        working-directory: devops/infrastructure/node-network
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
@@ -75,17 +78,15 @@ jobs:
           kubectl get pods
           kubectl get pods | grep rpc-node | awk '{print $1}'
           kubectl cp $(kubectl get pods | grep rpc-node | awk '{print $1}'):/chain-data/chain-data.7z ./chain-data.7z
-        working-directory: devops/infrastructure/node-network
 
       - name: Get kubectl events for debugging
         if: always()
         run: |
           kubectl get events
-        working-directory: devops/infrastructure/node-network
 
       - name: Upload chain-spec files and other secrets as an artifact
         uses: actions/upload-artifact@v2
         with:
           name: chain-data.7z
-          path: chain-data.7z
+          path: devops/infrastructure/node-network/chain-data.7z
           retention-days: 1
