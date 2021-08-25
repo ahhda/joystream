@@ -1,0 +1,36 @@
+name: Create node-network using Pulumi
+
+on:
+  workflow_dispatch:
+    # inputs:
+    #   name:
+    #     description: 'Release name (v9.3.0 - Antioch)'
+    #     required: true
+    #   tag:
+    #     description: 'Tag (v9.3.0)'
+    #     required: true
+
+# env:
+#   REPOSITORY: joystream/node
+
+jobs:
+  up:
+    name: Create Pulumi stack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14.x'
+
+      - uses: pulumi/actions@v3
+        with:
+          work-dir: ./devops/infrastructure/node-network
+          command: preview
+          stack-name: dev
+          cloud-url: file://~
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'us-east-1'
