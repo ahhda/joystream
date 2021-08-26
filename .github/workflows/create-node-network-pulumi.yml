@@ -3,7 +3,7 @@ name: Create node-network using Pulumi
 on:
   workflow_dispatch:
     inputs:
-      encryption-key:
+      encryptionKey:
         description: 'Encryption Key (will be used to password protect secrets 7z file)'
         required: true
         default: 'password'
@@ -39,7 +39,7 @@ jobs:
       - name: Mask input key
         id: add_mask
         run: |
-          ENCRYPTION_KEY=$(jq -r '.inputs.encryption-key' $GITHUB_EVENT_PATH)
+          ENCRYPTION_KEY=$(jq -r '.inputs.encryptionKey' $GITHUB_EVENT_PATH)
           echo "::add-mask::$ENCRYPTION_KEY"
           echo ENCRYPTION_KEY="$ENCRYPTION_KEY" >> $GITHUB_ENV
 
