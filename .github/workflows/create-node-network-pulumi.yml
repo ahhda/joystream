@@ -52,6 +52,7 @@ jobs:
         with:
           work-dir: devops/infrastructure/node-network
           command: up
+          refresh: true
           stack-name: dev
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
