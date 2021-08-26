@@ -36,6 +36,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Mask input key
+        id: add_mask
+        run: |
+          ENCRYPTION_KEY=$(jq -r '.inputs.encryption-key' $GITHUB_EVENT_PATH)
+          echo "::add-mask::$ENCRYPTION_KEY"
+          echo ENCRYPTION_KEY="$ENCRYPTION_KEY" >> $GITHUB_ENV
+
       - name: Create local stack
         run: |
           npm install
@@ -43,7 +50,7 @@ jobs:
           pulumi stack select dev --non-interactive --create
           pulumi config set-all --plaintext aws:region=us-east-1 \
             --plaintext numberOfValidators=2 --plaintext isMinikube=false --plaintext networkSuffix=8122 \
-            --plaintext nodeImage=joystream/node:latest --plaintext encryptionKey=${{ github.event.inputs.encryption-key }}
+            --plaintext nodeImage=joystream/node:latest --plaintext encryptionKey=$ENCRYPTION_KEY
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
