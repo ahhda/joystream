@@ -42,13 +42,13 @@ jobs:
           pulumi login
           pulumi stack select dev --non-interactive --create
           pulumi config set-all --plaintext aws:region=us-east-1 \
-            --plaintext numberOfValidatpuors=2 --plaintext isMinikube=false --plaintext networkSuffix=8122 \
+            --plaintext numberOfValidators=2 --plaintext isMinikube=false --plaintext networkSuffix=8122 \
             --plaintext nodeImage=joystream/node:latest --plaintext encryptionKey=${{ github.event.inputs.encryption-key }}
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
       - uses: pulumi/actions@v3
-        id: pulumi
+        name: Run pulumi up without load balancer
         with:
           work-dir: devops/infrastructure/node-network
           command: up
@@ -59,11 +59,31 @@ jobs:
           AWS_REGION: 'us-east-1'
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
-      - name: Run kubectl commands
+      - name: Mark load balancer as active
+        run: |
+          sleep 30
+          pulumi config set isLoadBalancerReady true
+
+      - uses: pulumi/actions@v3
+        id: pulumi
+        name: Run pulumi up with load balancer
+        with:
+          work-dir: devops/infrastructure/node-network
+          command: up
+          stack-name: dev
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'us-east-1'
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+      - name: Set KUBECONFIG
         run: |
           pulumi stack output kubeconfig > kubeconfig.yml
-          export KUBECONFIG=$PWD/kubeconfig.yml
           echo "KUBECONFIG=$PWD/kubeconfig.yml" >> $GITHUB_ENV
+
+      - name: Get chain-data from the pod
+        run: |
           kubectl config set-context --current --namespace=${{ steps.pulumi.outputs.namespaceName }}
           kubectl cp $(kubectl get pods | grep rpc-node | awk '{print $1}'):/chain-data/chain-data.7z ./chain-data.7z
 
