@@ -41,13 +41,14 @@ jobs:
         run: |
           ENCRYPTION_KEY=$(jq -r '.inputs.encryptionKey' $GITHUB_EVENT_PATH)
           echo "::add-mask::$ENCRYPTION_KEY"
-          echo ENCRYPTION_KEY="$ENCRYPTION_KEY" >> $GITHUB_ENV
+          echo "ENCRYPTION_KEY=$ENCRYPTION_KEY" >> $GITHUB_ENV
 
       - name: Create local stack
         run: |
           npm install
           pulumi login
           pulumi stack select dev --non-interactive --create
+          echo $ENCRYPTION_KEY
           pulumi config set-all --plaintext aws:region=us-east-1 \
             --plaintext numberOfValidators=2 --plaintext isMinikube=false --plaintext networkSuffix=8122 \
             --plaintext nodeImage=joystream/node:latest --plaintext encryptionKey=$ENCRYPTION_KEY
