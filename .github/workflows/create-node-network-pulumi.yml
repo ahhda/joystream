@@ -3,10 +3,13 @@ name: Create node-network using Pulumi
 on:
   workflow_dispatch:
     inputs:
-      encryption-key:
+      encryptionKey:
         description: 'Encryption Key (will be used to password protect secrets 7z file)'
         required: true
         default: 'password'
+      pulumiToken:
+        description: 'Pulumi Access Token'
+        required: false
 
 defaults:
   run:
@@ -23,12 +26,6 @@ jobs:
         with:
           node-version: '14.x'
 
-      # - name: Setup Minikube
-      #   uses: manusa/actions-setup-minikube@v2.4.2
-      #   with:
-      #     minikube version: 'v1.21.0'
-      #     kubernetes version: 'v1.20.7'
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -36,19 +33,52 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Mask input key
+        id: add_mask
+        run: |
+          ENCRYPTION_KEY=$(jq -r '.inputs.encryptionKey' $GITHUB_EVENT_PATH)
+          ACCESS_TOKEN=$(jq -r '.inputs.pulumiToken' $GITHUB_EVENT_PATH)
+          echo "::add-mask::$ENCRYPTION_KEY"
+          echo "ENCRYPTION_KEY=$ENCRYPTION_KEY" >> $GITHUB_ENV
+          if [[ -z "${ACCESS_TOKEN}" ]] || [[ "$ACCESS_TOKEN" == "null" ]]
+          then
+            echo "No access token provided"
+            echo "PULUMI_ACCESS_TOKEN=${{ secrets.PULUMI_ACCESS_TOKEN }}" >> $GITHUB_ENV
+          else
+            echo "Found token"
+            echo "::add-mask::$ACCESS_TOKEN"
+            echo "PULUMI_ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+          fi
+
       - name: Create local stack
         run: |
           npm install
           pulumi login
           pulumi stack select dev --non-interactive --create
           pulumi config set-all --plaintext aws:region=us-east-1 \
-            --plaintext numberOfValidatpuors=2 --plaintext isMinikube=false --plaintext networkSuffix=8122 \
-            --plaintext nodeImage=joystream/node:latest --plaintext encryptionKey=${{ github.event.inputs.encryption-key }}
+            --plaintext numberOfValidators=2 --plaintext isMinikube=false --plaintext networkSuffix=8122 \
+            --plaintext nodeImage=joystream/node:latest --plaintext encryptionKey=$ENCRYPTION_KEY
+
+      - uses: pulumi/actions@v3
+        name: Run pulumi up without load balancer
+        with:
+          work-dir: devops/infrastructure/node-network
+          command: up
+          refresh: true
+          stack-name: dev
         env:
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'us-east-1'
+
+      - name: Mark load balancer as active
+        run: |
+          sleep 30
+          pulumi config set isLoadBalancerReady true
 
       - uses: pulumi/actions@v3
         id: pulumi
+        name: Run pulumi up with load balancer
         with:
           work-dir: devops/infrastructure/node-network
           command: up
@@ -59,11 +89,13 @@ jobs:
           AWS_REGION: 'us-east-1'
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
-      - name: Run kubectl commands
+      - name: Set KUBECONFIG
         run: |
           pulumi stack output kubeconfig > kubeconfig.yml
-          export KUBECONFIG=$PWD/kubeconfig.yml
           echo "KUBECONFIG=$PWD/kubeconfig.yml" >> $GITHUB_ENV
+
+      - name: Get chain-data from the pod
+        run: |
           kubectl config set-context --current --namespace=${{ steps.pulumi.outputs.namespaceName }}
           kubectl cp $(kubectl get pods | grep rpc-node | awk '{print $1}'):/chain-data/chain-data.7z ./chain-data.7z
 
