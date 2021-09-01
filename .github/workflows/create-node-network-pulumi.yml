@@ -3,13 +3,29 @@ name: Create node-network using Pulumi
 on:
   workflow_dispatch:
     inputs:
+      pulumiToken:
+        description: 'Pulumi Access Token'
+        required: false
       encryptionKey:
         description: 'Encryption Key (will be used to password protect secrets 7z file)'
         required: true
         default: 'password'
-      pulumiToken:
-        description: 'Pulumi Access Token'
+      stackName:
+        description: 'Pulumi Stack Name'
         required: false
+        default: 'dev'
+      numberOfValidators:
+        description: 'Number of Validator nodes'
+        required: false
+        default: 2
+      networkSuffix:
+        description: 'Network Suffix'
+        required: false
+        default: 8122
+      nodeImage:
+        description: 'Joystream Docker image to be deployed (joystream/node:latest)'
+        required: false
+        default: 'joystream/node:latest'
 
 defaults:
   run:
@@ -54,10 +70,10 @@ jobs:
         run: |
           npm install
           pulumi login
-          pulumi stack select dev --non-interactive --create
-          pulumi config set-all --plaintext aws:region=us-east-1 \
-            --plaintext numberOfValidators=2 --plaintext isMinikube=false --plaintext networkSuffix=8122 \
-            --plaintext nodeImage=joystream/node:latest --plaintext encryptionKey=$ENCRYPTION_KEY
+          pulumi stack select ${{ github.event.inputs.stackName }} --non-interactive --create
+          pulumi config set-all --plaintext numberOfValidators=${{ github.event.inputs.numberOfValidators }} --plaintext isMinikube=false \
+            --plaintext networkSuffix=${{ github.event.inputs.networkSuffix }} \
+            --plaintext nodeImage=${{ github.event.inputs.nodeImage }} --plaintext encryptionKey=$ENCRYPTION_KEY
 
       - uses: pulumi/actions@v3
         name: Run pulumi up without load balancer
@@ -65,11 +81,7 @@ jobs:
           work-dir: devops/infrastructure/node-network
           command: up
           refresh: true
-          stack-name: dev
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: 'us-east-1'
+          stack-name: ${{ github.event.inputs.stackName }}
 
       - name: Mark load balancer as active
         run: |
@@ -82,11 +94,8 @@ jobs:
         with:
           work-dir: devops/infrastructure/node-network
           command: up
-          stack-name: dev
+          stack-name: ${{ github.event.inputs.stackName }}
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: 'us-east-1'
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
       - name: Set KUBECONFIG
