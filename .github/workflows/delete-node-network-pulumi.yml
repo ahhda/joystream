@@ -6,6 +6,10 @@ on:
       pulumiToken:
         description: 'Pulumi Access Token'
         required: false
+      stackName:
+        description: 'Pulumi Stack Name'
+        required: false
+        default: 'dev'
 
 defaults:
   run:
@@ -46,7 +50,7 @@ jobs:
         run: |
           npm install
           pulumi login
-          pulumi stack select dev --non-interactive
+          pulumi stack select ${{ github.event.inputs.stackName }} --non-interactive
 
       - uses: pulumi/actions@v3
         name: Run pulumi destory
@@ -54,8 +58,4 @@ jobs:
           work-dir: devops/infrastructure/node-network
           command: destroy
           refresh: true
-          stack-name: dev
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: 'us-east-1'
+          stack-name: ${{ github.event.inputs.stackName }}

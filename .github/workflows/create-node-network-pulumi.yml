@@ -95,8 +95,6 @@ jobs:
           work-dir: devops/infrastructure/node-network
           command: up
           stack-name: ${{ github.event.inputs.stackName }}
-        env:
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
       - name: Set KUBECONFIG
         run: |
