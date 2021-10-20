@@ -10,6 +10,9 @@
         name: common
         tasks_from: get-code-git
 
+    - name: Test failure
+      ansible.builtin.command: /bin/false
+
     # - name: Run setup and build
     #   include_role:
     #     name: common
