@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       STACK_NAME: joystream-github-action-${{ github.run_number }}
-      KEY_NAME: joystream-github-action-key
+      KEY_NAME: anuj-key
     steps:
       - name: Extract branch name
         shell: bash
@@ -60,6 +60,7 @@ jobs:
 
       - name: Delete CloudFormation Stack
         if: always()
+        continue-on-error: true
         run: |
           echo "Deleting ${{ env.STACK_NAME }} stack"
           aws cloudformation delete-stack --stack-name ${{ env.STACK_NAME }}

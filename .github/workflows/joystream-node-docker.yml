@@ -5,7 +5,7 @@ on:
 
 env:
   REPOSITORY: joystream/node
-  KEY_NAME: joystream-github-action-key
+  KEY_NAME: anuj-key
 
 jobs:
   push-amd64:
@@ -148,6 +148,7 @@ jobs:
 
       - name: Delete CloudFormation Stack
         if: always()
+        continue-on-error: true
         run: |
           echo "Deleting ${{ env.STACK_NAME }} stack"
           aws cloudformation delete-stack --stack-name ${{ env.STACK_NAME }}
