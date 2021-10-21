@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       STACK_NAME: joystream-github-action-${{ github.run_number }}
-      KEY_NAME: joystream-github-action-key
+      KEY_NAME: anuj-key
     steps:
       - name: Extract branch name
         shell: bash
