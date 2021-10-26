@@ -1,5 +1,5 @@
 # Creates an AWS AMI (system image) with compiled joystream-node and subkey
-# 
+#
 name: Create AWS AMI
 
 on:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       STACK_NAME: create-joystream-node-ami-ga-${{ github.run_number }}
-      KEY_NAME: joystream-github-action-key
+      KEY_NAME: anuj-key
     steps:
       - name: Extract branch name
         shell: bash
@@ -20,7 +20,7 @@ jobs:
 
       - name: Set AMI Name environment variable
         shell: bash
-        run: echo "ami_name=joystream-node-${{ steps.extract_branch.outputs.branch }}-${{ github.run_number }}" >> $GITHUB_ENV
+        run: echo "ami_name=joystream-anuj-${{ steps.extract_branch.outputs.branch }}-${{ github.run_number }}" >> $GITHUB_ENV
         id: ami_name
 
       - name: Checkout
