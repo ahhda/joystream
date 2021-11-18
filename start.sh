@@ -5,6 +5,10 @@ set -e
 # Make sure to run build-docker-images.sh prior to running this script to use
 # the local build.
 
+set -a
+. .env
+set +a
+
 # Clean start!
 docker-compose down -v
 
