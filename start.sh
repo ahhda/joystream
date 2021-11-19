@@ -18,8 +18,6 @@ function down()
     docker-compose down -v
 }
 
-trap down EXIT
-
 ## Run a local development chain
 docker-compose up -d joystream-node
 
@@ -41,6 +39,3 @@ docker-compose up -d pioneer
 
 echo "use Ctrl+C to shutdown the development network."
 
-while true; do 
-  read
-done
