@@ -61,7 +61,7 @@
       args:
         chdir: '{{ remote_code_path }}'
       environment:
-        PERSIST: true
+        PERSIST: 'true'
       async: 1800
       poll: 0
       register: compose_result
