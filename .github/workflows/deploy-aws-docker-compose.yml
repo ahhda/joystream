@@ -11,26 +11,24 @@ on:
         description: 'Branch to deploy'
         required: false
         default: 'master'
+      keyName:
+        description: 'SSH key pair on AWS'
+        required: false
+        default: 'joystream-github-action-key'
+      instanceType:
+        description: 'AWS EC2 instance type (t2.micro, t2.large)'
+        required: false
+        default: 't2.micro'
 
 defaults:
   run:
     working-directory: devops/aws
 
-env:
-  KEY_NAME: joystream-github-action-key
-
 jobs:
   run-docker-compose:
     name: Create an EC2 instance and configure docker-compose stack
     runs-on: ubuntu-latest
-    # env:
-    #   STACK_NAME: build-joystream-node-docker-ga-${{ github.run_number }}-${{ matrix.platform_tag }}
     steps:
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -49,7 +47,7 @@ jobs:
           cp deploy-single-node.sample.cfg docker-deploy-config.cfg
           echo GIT_REPO=${{ github.event.inputs.gitRepo }} >> docker-deploy-config.cfg
           echo BRANCH_NAME=${{ github.event.inputs.branchName }} >> docker-deploy-config.cfg
-          echo AWS_KEY_PAIR_NAME=${{ env.KEY_NAME }} >> docker-deploy-config.cfg
+          echo AWS_KEY_PAIR_NAME=${{ github.event.inputs.keyName }} >> docker-deploy-config.cfg
           echo DEFAULT_EC2_INSTANCE_TYPE=t2.xlarge >> docker-deploy-config.cfg
           cat docker-deploy-config.cfg
 
