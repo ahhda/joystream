@@ -1,0 +1,58 @@
+name: Deploy docker-compose stack on AWS EC2
+
+on:
+  workflow_dispatch:
+    inputs:
+      gitRepo:
+        description: 'Code repository'
+        required: false
+        default: 'https://github.com/Joystream/joystream.git'
+      branchName:
+        description: 'Branch to deploy'
+        required: false
+        default: 'master'
+
+defaults:
+  run:
+    working-directory: devops/aws
+
+env:
+  KEY_NAME: joystream-github-action-key
+
+jobs:
+  run-docker-compose:
+    name: Create an EC2 instance and configure docker-compose stack
+    runs-on: ubuntu-latest
+    # env:
+    #   STACK_NAME: build-joystream-node-docker-ga-${{ github.run_number }}-${{ matrix.platform_tag }}
+    steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Ansible dependencies
+        run: pipx inject ansible-core boto3 botocore
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Prepare CloudFormation config
+        run: |
+          cp deploy-single-node.sample.cfg docker-deploy-config.cfg
+          echo GIT_REPO=${{ github.event.inputs.gitRepo }} >> docker-deploy-config.cfg
+          echo BRANCH_NAME=${{ github.event.inputs.branchName }} >> docker-deploy-config.cfg
+          echo AWS_KEY_PAIR_NAME=${{ env.KEY_NAME }} >> docker-deploy-config.cfg
+          echo DEFAULT_EC2_INSTANCE_TYPE=t2.xlarge >> docker-deploy-config.cfg
+          cat docker-deploy-config.cfg
+
+      - name: Create stack and run playbook
+        run: |
+          ./deploy-stack-docker-compose.sh docker-deploy-config.cfg
