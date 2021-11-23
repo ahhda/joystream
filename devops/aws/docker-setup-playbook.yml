@@ -62,6 +62,19 @@
         chdir: '{{ remote_code_path }}'
       environment:
         PERSIST: true
+      async: 1800
+      poll: 0
+      register: compose_result
+
+    - name: Check on yarn start task
+      async_status:
+        jid: '{{ compose_result.ansible_job_id }}'
+      register: job_result
+      until: job_result.finished
+      # Max number of times to check for status
+      retries: 18
+      # Check for the status every 100s
+      delay: 100
 
     - name: Set nip.io domain with IP
       set_fact:
