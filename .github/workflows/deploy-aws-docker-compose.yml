@@ -44,27 +44,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # - name: Install SSH key
-      #   uses: shimataro/ssh-key-action@v2
-      #   with:
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     known_hosts: unnecessary
-      #     name: id_rsa
-
-      # - name: Prepare CloudFormation config
-      #   run: |
-      #     cp deploy-single-node.sample.cfg docker-deploy-config.cfg
-      #     ls ~/.ssh
-      #     cat ~/.aws/credentials
-      #     cat ~/.aws/config
-      #     echo GIT_REPO=${{ github.event.inputs.gitRepo }} >> docker-deploy-config.cfg
-      #     echo BRANCH_NAME=${{ github.event.inputs.branchName }} >> docker-deploy-config.cfg
-      #     echo AWS_KEY_PAIR_NAME=${{ github.event.inputs.keyName }} >> docker-deploy-config.cfg
-      #     echo DEFAULT_EC2_INSTANCE_TYPE=t2.xlarge >> docker-deploy-config.cfg
-      #     echo CLI_PROFILE=joystream-user >> docker-deploy-config.cfg
-      #     echo KEY_PATH=~/.ssh/id_rsa >> docker-deploy-config.cfg
-      #     cat docker-deploy-config.cfg
-
       - name: Deploy to AWS CloudFormation
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         id: deploy_stack
