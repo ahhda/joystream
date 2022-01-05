@@ -34,6 +34,5 @@
   community.aws.s3_sync:
     bucket: "{{ bucket_name }}"
     file_root: "{{ data_path }}/build"
-    profile: joystream-user
     region: us-east-1
   delegate_to: localhost
