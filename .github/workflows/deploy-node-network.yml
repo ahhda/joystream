@@ -35,6 +35,10 @@ on:
         description: 'Pre-built AMI ID'
         required: false
         default: 'ami-0090c9c49dc765fbb'
+      networkSuffix:
+        description: 'Network suffix that will be added to the network name'
+        required: false
+        default: '8129'
 
 defaults:
   run:
@@ -66,54 +70,62 @@ jobs:
       #     cp deploy-infra.sample.cfg deploy-infra.cfg
       #     echo EC2_AMI_ID="ami-0090c9c49dc765fbb" >> deploy-infra.cfg
 
-      - name: Deploy to AWS CloudFormation
-        uses: aws-actions/aws-cloudformation-github-deploy@v1
-        id: deploy_stack
-        with:
-          name: ${{ env.STACK_NAME }}
-          template: devops/aws/cloudformation/infrastructure.yml
-          no-fail-on-empty-changeset: '1'
-          parameter-overrides: >-
-            KeyName=${{ github.event.inputs.keyName }},
-            ValidatorEC2InstanceType=${{ github.event.inputs.validatorInstanceType }},
-            RPCEC2InstanceType=${{ github.event.inputs.rpcInstanceType }},
-            BuildEC2InstanceType=${{ github.event.inputs.buildInstanceType }},
-            EC2AMI=${{ github.event.inputs.ec2AMI }},
-            NumberOfValidators=${{ github.event.inputs.numberOfValidators }}
+      # - name: Deploy to AWS CloudFormation
+      #   uses: aws-actions/aws-cloudformation-github-deploy@v1
+      #   id: deploy_stack
+      #   with:
+      #     name: ${{ env.STACK_NAME }}
+      #     template: devops/aws/cloudformation/infrastructure.yml
+      #     no-fail-on-empty-changeset: '1'
+      #     parameter-overrides: >-
+      #       KeyName=${{ github.event.inputs.keyName }},
+      #       ValidatorEC2InstanceType=${{ github.event.inputs.validatorInstanceType }},
+      #       RPCEC2InstanceType=${{ github.event.inputs.rpcInstanceType }},
+      #       BuildEC2InstanceType=${{ github.event.inputs.buildInstanceType }},
+      #       EC2AMI=${{ github.event.inputs.ec2AMI }},
+      #       NumberOfValidators=${{ github.event.inputs.numberOfValidators }}
 
-      - name: Prepare inventory
+      - name: Prepare inventory for Ansible
         run: |
-          ASG=${{ steps.deploy_stack.outputs.AutoScalingId }}
+          # ASG=${{ steps.deploy_stack.outputs.AutoScalingId }}
 
-          VALIDATORS=""
+          # VALIDATORS=""
 
-          INSTANCES=$(aws autoscaling describe-auto-scaling-instances \
-            --query "AutoScalingInstances[?AutoScalingGroupName=='${ASG}'].InstanceId" --output text);
+          # INSTANCES=$(aws autoscaling describe-auto-scaling-instances \
+          #   --query "AutoScalingInstances[?AutoScalingGroupName=='${ASG}'].InstanceId" --output text);
 
-          for ID in $INSTANCES
-          do
-            IP=$(aws ec2 describe-instances --instance-ids $ID --query "Reservations[].Instances[].PublicIpAddress" --output text)
-            VALIDATORS+="$IP\n"
-          done
+          # for ID in $INSTANCES
+          # do
+          #   IP=$(aws ec2 describe-instances --instance-ids $ID --query "Reservations[].Instances[].PublicIpAddress" --output text)
+          #   VALIDATORS+="$IP\n"
+          # done
 
-          echo -e "[build]\n${{ steps.deploy_stack.outputs.BuildPublicIp }}\n" >> inventory
-          echo -e "[validators]\n$VALIDATORS\n" >> inventory
-          echo -e "[rpc]\n${{ steps.deploy_stack.outputs.RPCPublicIp }}" >> inventory
+          # echo -e "[build]\n${{ steps.deploy_stack.outputs.BuildPublicIp }}\n" >> inventory
+          # echo -e "[validators]\n$VALIDATORS" >> inventory
+          # echo -e "[rpc]\n${{ steps.deploy_stack.outputs.RPCPublicIp }}" >> inventory
+          echo -e "[build]3.84.31.161\n\n[validators]\n44.201.23.255\n44.200.180.106\n\n[rpc]\n54.234.126.167" >> inventory
           cat inventory
 
-      # - name: Run playbook
-      #   uses: dawidd6/action-ansible-playbook@v2
-      #   with:
-      #     playbook: deploy-playground-playbook.yml
-      #     directory: devops/aws
-      #     requirements: requirements.yml
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     inventory: |
-      #       [all]
-      #       ${{ steps.deploy_stack.outputs.PublicIp }}
-      #     options: |
-      #       --extra-vars "git_repo=${{ github.event.inputs.gitRepo }} \
-      #                     branch_name=${{ github.event.inputs.branchName }}"
+      - name: Run playbook
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: chain-spec-pioneer.yml
+          directory: devops/aws
+          requirements: requirements.yml
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          options: |
+            --inventory inventory
+            --extra-vars "network_suffix=${{ github.event.inputs.networkSuffix }} data_path=mydata \
+                          number_of_validators=${{ github.event.inputs.numberOfValidators }} \
+                          git_repo=${{ github.event.inputs.gitRepo }} deployment_type=live \
+                          branch_name=${{ github.event.inputs.branchName }}"
+
+      - name: Print all files
+        run: |
+          ls -al .
+          ls mydata/
+
+      # initial_members_file= initial_balances_file= \
 
       # # TODO: Remove only if any of the above steps fail
       # - name: Delete CloudFormation Stack
