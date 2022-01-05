@@ -125,6 +125,11 @@ jobs:
           ls -al .
           ls mydata/
 
+      - uses: actions/upload-artifact@v2
+        with:
+          name: data-chainspec-auth
+          path: devops/aws/mydata
+
       # initial_members_file= initial_balances_file= \
 
       # # TODO: Remove only if any of the above steps fail
