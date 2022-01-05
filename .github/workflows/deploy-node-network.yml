@@ -103,7 +103,7 @@ jobs:
           # echo -e "[build]\n${{ steps.deploy_stack.outputs.BuildPublicIp }}\n" >> inventory
           # echo -e "[validators]\n$VALIDATORS" >> inventory
           # echo -e "[rpc]\n${{ steps.deploy_stack.outputs.RPCPublicIp }}" >> inventory
-          echo -e "[build]3.84.31.161\n\n[validators]\n44.201.23.255\n44.200.180.106\n\n[rpc]\n54.234.126.167" >> inventory
+          echo -e "[build]\n3.84.31.161\n\n[validators]\n44.201.23.255\n44.200.180.106\n\n[rpc]\n54.234.126.167" >> inventory
           cat inventory
 
       - name: Run playbook
