@@ -109,7 +109,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           options: |
             --inventory inventory
-            --extra-vars "branch_name=${{ github.event.inputs.networkSuffix }} \
+            --extra-vars "branch_name=${{ github.event.inputs.branchName }} \
                           git_repo=${{ github.event.inputs.gitRepo }} data_path=mydata"
 
       - name: Run playbook to install additional utils on build server
