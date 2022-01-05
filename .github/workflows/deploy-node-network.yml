@@ -83,7 +83,7 @@ jobs:
 
       - name: Prepare inventory
         run: |
-          ASG=${{ steps.deploy_stack.outputs.AutoScalingGroup }}
+          ASG=${{ steps.deploy_stack.outputs.AutoScalingId }}
 
           VALIDATORS=""
 
@@ -98,7 +98,7 @@ jobs:
 
           echo -e "[build]\n${{ steps.deploy_stack.outputs.BuildPublicIp }}\n" >> inventory
           echo -e "[validators]\n$VALIDATORS\n" >> inventory
-          echo -e "[rpc]\n$${{ steps.deploy_stack.outputs.RPCPublicIp }}RPC_NODES" >> inventory
+          echo -e "[rpc]\n${{ steps.deploy_stack.outputs.RPCPublicIp }}" >> inventory
           cat inventory
 
       # - name: Run playbook
