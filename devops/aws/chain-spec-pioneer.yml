@@ -27,11 +27,11 @@
   roles:
     - rpc
 
-- name: Build Pioneer and copy artifacts to S3
-  hosts: build
-  gather_facts: no
+# - name: Build Pioneer and copy artifacts to S3
+#   hosts: build
+#   gather_facts: no
 
-  tasks:
-    - include_role:
-        name: admin
-        tasks_from: deploy-pioneer
+#   tasks:
+#     - include_role:
+#         name: admin
+#         tasks_from: deploy-pioneer
