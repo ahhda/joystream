@@ -32,11 +32,9 @@ on:
         required: false
         default: 't2.large'
       ec2AMI:
-        type: choice
-        description: 'Pre-built AMI ID'
+        description: 'Pre-built AMI ID (ami-0090c9c49dc765fbb)'
         required: false
         default: ''
-        options: ['ami-0090c9c49dc765fbb', '']
       networkSuffix:
         description: 'Network suffix that will be added to the network name'
         required: false
