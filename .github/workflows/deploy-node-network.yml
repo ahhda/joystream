@@ -106,7 +106,31 @@ jobs:
           echo -e "[build]\n3.84.31.161\n\n[validators]\n44.201.23.255\n44.200.180.106\n\n[rpc]\n54.234.126.167" >> inventory
           cat inventory
 
-      - name: Run playbook
+      - name: Run playbook to compile joystream-node on build server
+        uses: dawidd6/action-ansible-playbook@v2
+        if: github.event.inputs.ec2AMI == ''
+        with:
+          playbook: build-code.yml
+          directory: devops/aws
+          requirements: requirements.yml
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          options: |
+            --inventory inventory
+            --extra-vars "branch_name=${{ github.event.inputs.networkSuffix }} \
+                          git_repo=${{ github.event.inputs.gitRepo }} data_path=mydata"
+
+      - name: Run playbook to install additional utils on build server
+        uses: dawidd6/action-ansible-playbook@v2
+        if: github.event.inputs.ec2AMI == ''
+        with:
+          playbook: setup-admin.yml
+          directory: devops/aws
+          requirements: requirements.yml
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          options: |
+            --inventory inventory
+
+      - name: Run playbook to configure chain-spec and pioneer
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: chain-spec-pioneer.yml
@@ -120,24 +144,18 @@ jobs:
                           git_repo=${{ github.event.inputs.gitRepo }} deployment_type=live \
                           branch_name=${{ github.event.inputs.branchName }}"
 
-      - name: Print all files
-        run: |
-          ls -al .
-          ls mydata/
-
-      - uses: actions/upload-artifact@v2
+      - name: Save the output as an artifact
+        uses: actions/upload-artifact@v2
         with:
           name: data-chainspec-auth
           path: devops/aws/mydata
 
       # initial_members_file= initial_balances_file= \
 
-      # # TODO: Remove only if any of the above steps fail
-      # - name: Delete CloudFormation Stack
-      #   if: always()
-      #   continue-on-error: true
-      #   run: |
-      #     echo "Deleting ${{ env.STACK_NAME }} stack"
-      #     aws cloudformation delete-stack --stack-name ${{ env.STACK_NAME }}
-      #     echo "Waiting for ${{ env.STACK_NAME }} to be deleted..."
-      #     aws cloudformation wait stack-delete-complete --stack-name ${{ env.STACK_NAME }}
+      - name: Delete CloudFormation Stack if any step failed
+        if: failure()
+        run: |
+          echo "Deleting ${{ env.STACK_NAME }} stack"
+          aws cloudformation delete-stack --stack-name ${{ env.STACK_NAME }}
+          echo "Waiting for ${{ env.STACK_NAME }} to be deleted..."
+          aws cloudformation wait stack-delete-complete --stack-name ${{ env.STACK_NAME }}
