@@ -254,8 +254,8 @@ Outputs:
     Export:
       Name: !Sub "${AWS::StackName}S3BucketName"
 
-  DomainName:
-    Description: CloudFront Domain Name
-    Value:  !Sub "${CloudFrontDistribution.DomainName}"
-    Export:
-      Name: !Sub "${AWS::StackName}DomainName"
+  # DomainName:
+  #   Description: CloudFront Domain Name
+  #   Value:  !Sub "${CloudFrontDistribution.DomainName}"
+  #   Export:
+  #     Name: !Sub "${AWS::StackName}DomainName"
