@@ -35,6 +35,7 @@ on:
         description: 'Pre-built AMI ID'
         required: false
         default: 'ami-0090c9c49dc765fbb'
+        options: ['ami-0090c9c49dc765fbb', '']
       networkSuffix:
         description: 'Network suffix that will be added to the network name'
         required: false
