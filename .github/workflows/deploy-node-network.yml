@@ -32,6 +32,7 @@ on:
         required: false
         default: 't2.large'
       ec2AMI:
+        type: choice
         description: 'Pre-built AMI ID'
         required: false
         default: 'ami-0090c9c49dc765fbb'
