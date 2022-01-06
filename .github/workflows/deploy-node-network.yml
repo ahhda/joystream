@@ -39,6 +39,14 @@ on:
         description: 'Network suffix that will be added to the network name'
         required: false
         default: '8129'
+      initialBalancesFile:
+        description: 'HTTP Link to the Initial Balances file'
+        required: false
+        default: ''
+      initialMembersFile:
+        description: 'HTTP Link to the Initial Members file'
+        required: false
+        default: ''
 
 defaults:
   run:
@@ -123,6 +131,12 @@ jobs:
           options: |
             --inventory inventory
 
+      - name: Download balance and member files
+        run: |
+          wget ${{ github.event.inputs.initialMembersFile }} -O initial-members.json
+          wget ${{ github.event.inputs.initialBalancesFile }} -O initial-balances.json
+          ls -al .
+
       - name: Run playbook to configure chain-spec and pioneer
         uses: dawidd6/action-ansible-playbook@v2
         with:
@@ -136,7 +150,8 @@ jobs:
                           number_of_validators=${{ github.event.inputs.numberOfValidators }} \
                           git_repo=${{ github.event.inputs.gitRepo }} deployment_type=live \
                           bucket_name=${{ steps.deploy_stack.outputs.S3BucketName }} \
-                          branch_name=${{ github.event.inputs.branchName }}"
+                          branch_name=${{ github.event.inputs.branchName }} \
+                          initial_members_file=initial-members.json initial_balances_file=initial-balances.json"
 
       - name: Save the output as an artifact
         uses: actions/upload-artifact@v2
