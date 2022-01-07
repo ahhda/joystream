@@ -48,6 +48,18 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Download initial balances file
+        if: steps.myoutputs.outputs.initialBalancesFile != ''
+        run: |
+          wget ${{ steps.myoutputs.outputs.initialBalancesFile }} -O initial-balances.json
+          ls -al .
+
+      - name: Download initial members file
+        if: steps.myoutputs.outputs.initialMembersFile != ''
+        run: |
+          wget ${{ steps.myoutputs.outputs.initialMembersFile }} -O initial-members.json
+          ls -al .
+
       - name: Deploy to AWS CloudFormation
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         id: deploy_stack
@@ -106,12 +118,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           options: |
             --inventory inventory
-
-      - name: Download balance and member files
-        run: |
-          wget ${{ steps.myoutputs.outputs.initialMembersFile }} -O initial-members.json
-          wget ${{ steps.myoutputs.outputs.initialBalancesFile }} -O initial-balances.json
-          ls -al .
 
       - name: Run playbook to configure chain-spec and pioneer
         uses: dawidd6/action-ansible-playbook@v2
