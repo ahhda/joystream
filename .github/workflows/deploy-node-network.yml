@@ -25,7 +25,7 @@ jobs:
       - name: Set env variables
         id: myoutputs # set the outputs
         run: |
-          jsonInput=`${{ github.event.inputs.jsonInput }}`
+          jsonInput='${{ github.event.inputs.jsonInput }}'
           echo ::set-output name=gitRepo::$(echo $jsonInput | jq -r '.gitRepo.value')
           echo ::set-output name=branchName::$(echo $jsonInput | jq -r '.branchName.value')
           echo ::set-output name=keyName::$(echo $jsonInput | jq -r '.keyName.value')
