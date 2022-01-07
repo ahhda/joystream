@@ -147,7 +147,7 @@ jobs:
       - name: Print output URL's
         run: |
           echo -e "Pioneer URL: https://${{ steps.deploy_stack.outputs.DomainName }}"
-          echo -e "RPC: https://${{ steps.deploy_stack.outputs.RPCPublicIp }}.nip.io/ws-rpc"
+          echo -e "RPC: wss://${{ steps.deploy_stack.outputs.RPCPublicIp }}.nip.io/ws-rpc"
 
       - name: Delete CloudFormation Stack if any step failed
         if: failure()
