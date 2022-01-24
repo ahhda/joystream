@@ -1,8 +1,8 @@
-name: storage-node
+name: query-node
 on: [pull_request, push]
 
 jobs:
-  storage_node_build_ubuntu:
+  query_node_build_ubuntu:
     name: Ubuntu Checks
     runs-on: ubuntu-latest
     strategy:
@@ -19,10 +19,10 @@ jobs:
         yarn install --frozen-lockfile
         yarn workspace @joystream/types build
         yarn workspace @joystream/metadata-protobuf build
-        yarn workspace storage-node lint --quiet
-        yarn workspace storage-node build
+        yarn workspace query-node-root build
+        yarn workspace query-node-mappings checks --quiet
 
-  storage_node_build_osx:
+  query_node_build_osx:
     name: MacOS Checks
     runs-on: macos-latest
     strategy:
@@ -39,5 +39,5 @@ jobs:
         yarn install --frozen-lockfile --network-timeout 120000
         yarn workspace @joystream/types build
         yarn workspace @joystream/metadata-protobuf build
-        yarn workspace storage-node lint --quiet
-        yarn workspace storage-node build
+        yarn workspace query-node-root build
+        yarn workspace query-node-mappings checks --quiet
