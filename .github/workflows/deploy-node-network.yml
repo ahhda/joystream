@@ -25,9 +25,6 @@ jobs:
       - name: Set env variables
         id: myoutputs # set the outputs
         run: |
-          # export ENCRYPTION_KEY=$(jq -r '.inputs.jsonInput.encryptionKey.value' $GITHUB_EVENT_PATH)
-          # echo "subject=$SUBJECT" >> $GITHUB_ENV; echo "::add-mask::$SUBJECT"
-          # jsonInput='${{ github.event.inputs.jsonInput }}'
           jsonInput=$(jq -r '.inputs.jsonInput' $GITHUB_EVENT_PATH)
           export ENCRYPTION_KEY=$(echo $jsonInput | jq -r '.encryptionKey.value')
           echo $ENCRYPTION_KEY
@@ -151,7 +148,7 @@ jobs:
 
       - name: Encrpyt the artifacts
         run: |
-          7z a -p${{ env.encryptionKey }} chain-data.7z mydata/*
+          7z a -p$encryptionKey chain-data.7z mydata/*
           ls -al .
 
       - name: Save the output as an artifact
