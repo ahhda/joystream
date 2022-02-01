@@ -29,7 +29,7 @@ jobs:
           export ENCRYPTION_KEY=$(echo $jsonInput | jq -r '.encryptionKey.value')
           echo $ENCRYPTION_KEY
           echo ::set-output name=encryptionKey::$ENCRYPTION_KEY
-          echo "encryptionKey=$ENCRYPTION_KEY" >> $GITHUB_ENV; echo "::add-mask::$ENCRYPTION_KEY"
+          # echo "encryptionKey=$ENCRYPTION_KEY" >> $GITHUB_ENV; echo "::add-mask::$ENCRYPTION_KEY"
           echo ::set-output name=gitRepo::$(echo $jsonInput | jq -r '.gitRepo.value')
           echo ::set-output name=branchName::$(echo $jsonInput | jq -r '.branchName.value')
           echo ::set-output name=keyName::$(echo $jsonInput | jq -r '.keyName.value')
@@ -148,7 +148,7 @@ jobs:
 
       - name: Encrpyt the artifacts
         run: |
-          7z a -p$encryptionKey chain-data.7z mydata/*
+          7z a -p${{ steps.myoutputs.outputs.encryptionKey }} chain-data.7z mydata/*
           ls -al .
 
       - name: Save the output as an artifact
