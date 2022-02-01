@@ -58,6 +58,7 @@ jobs:
           fi
           mkdir mydata
           touch mydata/hello.txt
+          echo "Content" >> mydata/hello.txt
 
       # - name: Install Ansible dependencies
       #   run: pipx inject ansible-core boto3 botocore
