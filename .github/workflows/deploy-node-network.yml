@@ -55,9 +55,6 @@ jobs:
             wget $initialMembersFile -O initial-members.json
             echo ::set-output name=initialMembersFilePath::'initial-members.json'
           fi
-          mkdir mydata
-          touch mydata/hello.txt
-          echo "Content" >> mydata/hello.txt
 
       - name: Install Ansible dependencies
         run: pipx inject ansible-core boto3 botocore

@@ -48,7 +48,7 @@
     "value": "live"
   },
   "encryptionKey": {
-    "description": "Password to encrpyt the artifacts",
+    "description": "Password to encrypt the artifacts",
     "value": "password"
   }
 }
