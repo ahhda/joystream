@@ -59,97 +59,96 @@ jobs:
           touch mydata/hello.txt
           echo "Content" >> mydata/hello.txt
 
-      # - name: Install Ansible dependencies
-      #   run: pipx inject ansible-core boto3 botocore
+      - name: Install Ansible dependencies
+        run: pipx inject ansible-core boto3 botocore
 
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@v1
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws-region: us-east-1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-      # - name: Deploy to AWS CloudFormation
-      #   uses: aws-actions/aws-cloudformation-github-deploy@v1
-      #   id: deploy_stack
-      #   with:
-      #     name: ${{ env.STACK_NAME }}
-      #     template: devops/aws/cloudformation/infrastructure.yml
-      #     no-fail-on-empty-changeset: '1'
-      #     parameter-overrides: >-
-      #       KeyName=${{ steps.myoutputs.outputs.keyName }},
-      #       ValidatorEC2InstanceType=${{ steps.myoutputs.outputs.validatorInstanceType }},
-      #       RPCEC2InstanceType=${{ steps.myoutputs.outputs.rpcInstanceType }},
-      #       BuildEC2InstanceType=${{ steps.myoutputs.outputs.buildInstanceType }},
-      #       EC2AMI=${{ steps.myoutputs.outputs.ec2AMI }},
-      #       NumberOfValidators=${{ steps.myoutputs.outputs.numberOfValidators }}
+      - name: Deploy to AWS CloudFormation
+        uses: aws-actions/aws-cloudformation-github-deploy@v1
+        id: deploy_stack
+        with:
+          name: ${{ env.STACK_NAME }}
+          template: devops/aws/cloudformation/infrastructure.yml
+          no-fail-on-empty-changeset: '1'
+          parameter-overrides: >-
+            KeyName=${{ steps.myoutputs.outputs.keyName }},
+            ValidatorEC2InstanceType=${{ steps.myoutputs.outputs.validatorInstanceType }},
+            RPCEC2InstanceType=${{ steps.myoutputs.outputs.rpcInstanceType }},
+            BuildEC2InstanceType=${{ steps.myoutputs.outputs.buildInstanceType }},
+            EC2AMI=${{ steps.myoutputs.outputs.ec2AMI }},
+            NumberOfValidators=${{ steps.myoutputs.outputs.numberOfValidators }}
 
-      # - name: Prepare inventory for Ansible
-      #   run: |
-      #     ASG=${{ steps.deploy_stack.outputs.AutoScalingId }}
+      - name: Prepare inventory for Ansible
+        run: |
+          ASG=${{ steps.deploy_stack.outputs.AutoScalingId }}
 
-      #     VALIDATORS=""
+          VALIDATORS=""
 
-      #     INSTANCES=$(aws autoscaling describe-auto-scaling-instances \
-      #       --query "AutoScalingInstances[?AutoScalingGroupName=='${ASG}'].InstanceId" --output text);
+          INSTANCES=$(aws autoscaling describe-auto-scaling-instances \
+            --query "AutoScalingInstances[?AutoScalingGroupName=='${ASG}'].InstanceId" --output text);
 
-      #     for ID in $INSTANCES
-      #     do
-      #       IP=$(aws ec2 describe-instances --instance-ids $ID --query "Reservations[].Instances[].PublicIpAddress" --output text)
-      #       VALIDATORS+="$IP\n"
-      #     done
+          for ID in $INSTANCES
+          do
+            IP=$(aws ec2 describe-instances --instance-ids $ID --query "Reservations[].Instances[].PublicIpAddress" --output text)
+            VALIDATORS+="$IP\n"
+          done
 
-      #     echo -e "[build]\n${{ steps.deploy_stack.outputs.BuildPublicIp }}\n" >> inventory
-      #     echo -e "[validators]\n$VALIDATORS" >> inventory
-      #     echo -e "[rpc]\n${{ steps.deploy_stack.outputs.RPCPublicIp }}" >> inventory
-      #     cat inventory
+          echo -e "[build]\n${{ steps.deploy_stack.outputs.BuildPublicIp }}\n" >> inventory
+          echo -e "[validators]\n$VALIDATORS" >> inventory
+          echo -e "[rpc]\n${{ steps.deploy_stack.outputs.RPCPublicIp }}" >> inventory
+          cat inventory
 
-      # - name: Run playbook to compile joystream-node on build server
-      #   uses: dawidd6/action-ansible-playbook@v2
-      #   if: steps.myoutputs.outputs.ec2AMI == ''
-      #   with:
-      #     playbook: build-code.yml
-      #     directory: devops/aws
-      #     requirements: requirements.yml
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     options: |
-      #       --inventory inventory
-      #       --extra-vars "branch_name=${{ steps.myoutputs.outputs.branchName }} \
-      #                     git_repo=${{ steps.myoutputs.outputs.gitRepo }} data_path=mydata"
+      - name: Run playbook to compile joystream-node on build server
+        uses: dawidd6/action-ansible-playbook@v2
+        if: steps.myoutputs.outputs.ec2AMI == ''
+        with:
+          playbook: build-code.yml
+          directory: devops/aws
+          requirements: requirements.yml
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          options: |
+            --inventory inventory
+            --extra-vars "branch_name=${{ steps.myoutputs.outputs.branchName }} \
+                          git_repo=${{ steps.myoutputs.outputs.gitRepo }} data_path=mydata"
 
-      # - name: Run playbook to install additional utils on build server
-      #   uses: dawidd6/action-ansible-playbook@v2
-      #   if: steps.myoutputs.outputs.ec2AMI == ''
-      #   with:
-      #     playbook: setup-admin.yml
-      #     directory: devops/aws
-      #     requirements: requirements.yml
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     options: |
-      #       --inventory inventory
+      - name: Run playbook to install additional utils on build server
+        uses: dawidd6/action-ansible-playbook@v2
+        if: steps.myoutputs.outputs.ec2AMI == ''
+        with:
+          playbook: setup-admin.yml
+          directory: devops/aws
+          requirements: requirements.yml
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          options: |
+            --inventory inventory
 
-      # - name: Run playbook to configure chain-spec and pioneer
-      #   uses: dawidd6/action-ansible-playbook@v2
-      #   with:
-      #     playbook: chain-spec-pioneer.yml
-      #     directory: devops/aws
-      #     requirements: requirements.yml
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     options: |
-      #       --inventory inventory
-      #       --extra-vars "network_suffix=${{ steps.myoutputs.outputs.networkSuffix }} data_path=mydata \
-      #                     number_of_validators=${{ steps.myoutputs.outputs.numberOfValidators }} \
-      #                     git_repo=${{ steps.myoutputs.outputs.gitRepo }} \
-      #                     deployment_type=${{ steps.myoutputs.outputs.deploymentType }} \
-      #                     bucket_name=${{ steps.deploy_stack.outputs.S3BucketName }} \
-      #                     branch_name=${{ steps.myoutputs.outputs.branchName }} \
-      #                     initial_members_file=${{ steps.myoutputs.outputs.initialMembersFilePath }} \
-      #                     initial_balances_file=${{ steps.myoutputs.outputs.initialBalancesFilePath }}"
+      - name: Run playbook to configure chain-spec and pioneer
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: chain-spec-pioneer.yml
+          directory: devops/aws
+          requirements: requirements.yml
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          options: |
+            --inventory inventory
+            --extra-vars "network_suffix=${{ steps.myoutputs.outputs.networkSuffix }} data_path=mydata \
+                          number_of_validators=${{ steps.myoutputs.outputs.numberOfValidators }} \
+                          git_repo=${{ steps.myoutputs.outputs.gitRepo }} \
+                          deployment_type=${{ steps.myoutputs.outputs.deploymentType }} \
+                          bucket_name=${{ steps.deploy_stack.outputs.S3BucketName }} \
+                          branch_name=${{ steps.myoutputs.outputs.branchName }} \
+                          initial_members_file=${{ steps.myoutputs.outputs.initialMembersFilePath }} \
+                          initial_balances_file=${{ steps.myoutputs.outputs.initialBalancesFilePath }}"
 
       - name: Encrpyt the artifacts
         run: |
           7z a -p${{ steps.myoutputs.outputs.encryptionKey }} chain-data.7z mydata/*
-          ls -al .
 
       - name: Save the output as an artifact
         uses: actions/upload-artifact@v2
