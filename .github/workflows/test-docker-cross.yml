@@ -1,0 +1,36 @@
+name: Test Docker Cross
+
+on:
+  workflow_dispatch:
+
+env:
+  REPOSITORY: joystream/node
+  KEY_NAME: joystream-github-action-key
+
+jobs:
+  build:
+    name: Build the code and run setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14.x'
+
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2021-02-20
+          default: true
+
+      - id: compute_shasum
+        name: Compute runtime code shasum
+        run: |
+          export RUNTIME_CODE_SHASUM=`scripts/runtime-code-shasum.sh`
+          echo "::set-output name=shasum::${RUNTIME_CODE_SHASUM}"
+          cargo install cross
+          cross build --target armv7-unknown-linux-gnueabihf --release
+          ls -al .
+          ls -al target/
