@@ -30,8 +30,8 @@ jobs:
         with:
           version: '10.0'
 
-      - id: compute_shasum
-        name: Compute runtime code shasum
+      - id: run_rustup_setup
+        name: Rustup setup
         run: |
           sudo apt-get update && sudo apt-get install -y curl git gcc xz-utils sudo pkg-config unzip clang llvm libc6-dev libclang-dev
           export RUNTIME_CODE_SHASUM=`scripts/runtime-code-shasum.sh`
@@ -40,11 +40,16 @@ jobs:
           rustup default nightly-2021-02-20
           rustup target add wasm32-unknown-unknown --toolchain nightly-2021-02-20
           rustup component add --toolchain nightly-2021-02-20 clippy
-          # ls -al ${{ github.workspace }}/clang/lib
-          # ls -al ${{ github.workspace }}/clang/bin/llvm-config
           export WASM_BUILD_TOOLCHAIN=nightly-2021-02-20
           cargo update -p librocksdb-sys
           cargo install cross
+
+      - uses: Swatinem/rust-cache@v1
+
+      - id: compute_shasum
+        name: Compute runtime code shasum
+        run: |
+          export WASM_BUILD_TOOLCHAIN=nightly-2021-02-20
           BUILD_DUMMY_WASM_BINARY=1 cross build --target armv7-unknown-linux-gnueabihf --release
           ls -al .
           ls -al target/
