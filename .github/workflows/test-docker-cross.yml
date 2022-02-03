@@ -34,6 +34,7 @@ jobs:
           rustup target add wasm32-unknown-unknown --toolchain nightly-2021-02-20
           rustup component add --toolchain nightly-2021-02-20 clippy
           sudo apt-get update && sudo apt-get install -y curl git gcc xz-utils sudo pkg-config unzip clang llvm libc6-dev libclang-dev
+          echo "Test caching"
 
       - uses: Swatinem/rust-cache@v1
 
