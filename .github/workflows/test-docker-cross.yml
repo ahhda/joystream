@@ -40,6 +40,7 @@ jobs:
           rustup default nightly-2021-02-20
           rustup target add wasm32-unknown-unknown --toolchain nightly-2021-02-20
           rustup component add --toolchain nightly-2021-02-20 clippy
+          echo "Installed"
 
       - uses: Swatinem/rust-cache@v1
 
