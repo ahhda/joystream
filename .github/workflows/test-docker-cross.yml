@@ -40,11 +40,14 @@ jobs:
           rustup default nightly-2021-02-20
           rustup target add wasm32-unknown-unknown --toolchain nightly-2021-02-20
           rustup component add --toolchain nightly-2021-02-20 clippy
+
+      - uses: Swatinem/rust-cache@v1
+
+      - id: run_cargo_install
+        run: |
           export WASM_BUILD_TOOLCHAIN=nightly-2021-02-20
           cargo update -p librocksdb-sys
           cargo install cross
-
-      - uses: Swatinem/rust-cache@v1
 
       - id: compute_shasum
         name: Compute runtime code shasum
