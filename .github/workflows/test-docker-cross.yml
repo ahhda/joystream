@@ -25,6 +25,11 @@ jobs:
           toolchain: nightly-2021-02-20
           default: true
 
+      - name: Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: '10.0'
+
       - id: compute_shasum
         name: Compute runtime code shasum
         run: |
@@ -35,6 +40,8 @@ jobs:
           rustup default nightly-2021-02-20
           rustup target add wasm32-unknown-unknown --toolchain nightly-2021-02-20
           rustup component add --toolchain nightly-2021-02-20 clippy
+          # ls -al ${{ github.workspace }}/clang/lib
+          # ls -al ${{ github.workspace }}/clang/bin/llvm-config
           export WASM_BUILD_TOOLCHAIN=nightly-2021-02-20
           cargo update -p librocksdb-sys
           cargo install cross
